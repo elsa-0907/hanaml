@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMS Spam Shield — AI-Powered SMS Threat Detection</title>
+  <meta name="description" content="Production-grade SMS spam and threat detection powered by TF-IDF and Linear Support Vector Classification.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <!-- Background Glow & Grid Canvas -->
+  <div class="bg-pattern" aria-hidden="true">
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="grid-lines"></div>
+  </div>
+
+  <!-- Top Navigation Bar -->
+  <header class="top-nav">
+    <div class="nav-container">
+      <a href="#" class="nav-brand" aria-label="SMS Spam Shield Home">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">SMS Spam Shield</span>
+          <span class="brand-tag">SECURITY AI</span>
+        </div>
+      </a>
+
+      <nav class="nav-links" aria-label="Primary Navigation">
+        <a href="#detector" class="nav-link active">Detector</a>
+        <a href="#how-it-works" class="nav-link">How It Works</a>
+        <a href="#about" class="nav-link">About</a>
+        <a href="#privacy" class="nav-link">Privacy</a>
+      </nav>
+
+      <div class="nav-status-container">
+        <!-- Dynamic Model Status Indicator -->
+        <div id="model-status-pill" class="status-pill status-loading" title="Checking model status...">
+          <span class="status-dot"></span>
+          <span id="model-status-text" class="status-label">Checking Model...</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="container hero-container">
+        <div class="hero-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="18" x="3" y="3" rx="2"/>
+            <path d="M9 9h6v6H9z"/>
+            <path d="M15 2v1"/>
+            <path d="M9 2v1"/>
+            <path d="M15 21v1"/>
+            <path d="M9 21v1"/>
+          </svg>
+          <span>TF-IDF + Linear SVM</span>
+        </div>
+        <h1 class="hero-title">Know what's hiding in your messages.</h1>
+        <p class="hero-subtitle">
+          Analyze suspicious SMS messages using machine learning. Identify potential spam before interacting with unwanted messages.
+        </p>
+      </div>
+    </section>
+
+    <!-- Main SMS Detection Interface -->
+    <section id="detector" class="detector-section">
+      <div class="container">
+        <div class="analyzer-card">
+          <div class="analyzer-card-header">
+            <div class="analyzer-title-group">
+              <label for="sms-input" class="analyzer-label">Message to analyze</label>
+              <p class="analyzer-hint">Enter or paste the full SMS content below to perform an automated classification.</p>
+            </div>
+            <div class="analyzer-meta">
+              <span id="char-counter" class="char-counter">0 / 1000 characters</span>
+            </div>
+          </div>
+
+          <!-- Quick Test Message Presets -->
+          <div class="presets-container" aria-label="Example test messages">
+            <span class="presets-label">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 16v-4"/>
+                <path d="M12 8h.01"/>
+              </svg>
+              Example presets:
+            </span>
+            <div class="preset-buttons">
+              <button type="button" class="preset-btn" data-preset="spam-urgent">
+                <span class="preset-tag preset-tag-spam">Spam</span> Lottery Prize
+              </button>
+              <button type="button" class="preset-btn" data-preset="spam-phishing">
+                <span class="preset-tag preset-tag-spam">Spam</span> Bank Alert
+              </button>
+              <button type="button" class="preset-btn" data-preset="ham-friend">
+                <span class="preset-tag preset-tag-ham">Ham</span> Friend Chat
+              </button>
+              <button type="button" class="preset-btn" data-preset="ham-delivery">
+                <span class="preset-tag preset-tag-ham">Ham</span> Delivery Notice
+              </button>
+            </div>
+          </div>
+
+          <!-- Input Area -->
+          <div class="input-wrapper">
+            <textarea
+              id="sms-input"
+              class="sms-textarea"
+              placeholder="Paste the SMS text here... e.g. 'URGENT: Your account has been temporarily locked. Verify now at https://secure-bank.example.com' or a personal text from a friend."
+              maxlength="5000"
+              rows="5"
+              spellcheck="false"
+              required
+            ></textarea>
+          </div>
+
+          <!-- Alert/Notification Box for Validation & Errors -->
+          <div id="error-banner" class="alert-banner alert-error hidden" role="alert">
+            <svg class="alert-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span id="error-message" class="alert-text"></span>
+          </div>
+
+          <!-- Analyzer Controls -->
+          <div class="analyzer-footer">
+            <div class="footer-info">
+              <button type="button" id="clear-btn" class="btn-ghost" title="Clear entered text">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"/>
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                </svg>
+                <span>Clear</span>
+              </button>
+              <span class="keyboard-tip">Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to analyze</span>
+            </div>
+
+            <button type="button" id="analyze-btn" class="btn-primary">
+              <span class="btn-spinner hidden" id="analyze-spinner" aria-hidden="true"></span>
+              <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.3-4.3"/>
+              </svg>
+              <span id="analyze-btn-text">Analyze Message</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Result Card (Populated dynamically) -->
+        <div id="result-container" class="result-container hidden" aria-live="polite">
+          <div id="result-card" class="result-card">
+            <!-- Header Section of Result -->
+            <div class="result-header">
+              <div class="result-status-group">
+                <div id="result-icon-wrapper" class="result-icon-wrapper">
+                  <!-- SVG will be injected or toggled -->
+                  <svg id="result-icon-spam" class="result-icon icon-spam hidden" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  <svg id="result-icon-ham" class="result-icon icon-ham hidden" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="m9 12 2 2 4-4"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 id="result-heading" class="result-heading">Detection Result</h2>
+                  <div class="classification-badge-container">
+                    <span id="result-badge" class="classification-badge">UNKNOWN</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="result-actions">
+                <button type="button" id="reset-result-btn" class="btn-secondary" title="Analyze another message">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                    <path d="M21 3v5h-5"/>
+                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                    <path d="M8 16H3v5"/>
+                  </svg>
+                  <span>Analyze Another</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Recommendation Alert Box -->
+            <div id="result-recommendation-box" class="recommendation-box">
+              <div class="recommendation-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <span class="recommendation-title">Security Recommendation</span>
+              </div>
+              <p id="result-recommendation-text" class="recommendation-text"></p>
+            </div>
+
+            <!-- Analyzed Message Content -->
+            <div class="analyzed-content-block">
+              <span class="content-block-label">Analyzed Message</span>
+              <blockquote id="result-message-text" class="analyzed-text"></blockquote>
+            </div>
+
+            <!-- Metadata Footer -->
+            <div class="result-meta-footer">
+              <div class="meta-item">
+                <span class="meta-label">Evaluation Engine:</span>
+                <span class="meta-value">Linear Support Vector Classifier</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Timestamp:</span>
+                <span id="result-timestamp" class="meta-value font-mono">-</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Inference Mode:</span>
+                <span class="meta-value">Deterministic decision boundary (no artificial confidence scores)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="section-container">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">ARCHITECTURE</span>
+          <h2 class="section-title">How It Works</h2>
+          <p class="section-subtitle">
+            An end-to-end natural language processing pipeline optimized for lightweight, low-latency SMS threat classification.
+          </p>
+        </div>
+
+        <div class="workflow-grid">
+          <div class="workflow-card">
+            <div class="step-badge">01</div>
+            <div class="workflow-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <h3 class="workflow-step-title">Message Input</h3>
+            <p class="workflow-step-desc">
+              Raw SMS text is received through a secure POST request, normalized, and pre-screened for encoding and length constraints.
+            </p>
+          </div>
+
+          <div class="workflow-card">
+            <div class="step-badge">02</div>
+            <div class="workflow-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+                <path d="M12 12v9"/>
+                <path d="m8 17 4 4 4-4"/>
+              </svg>
+            </div>
+            <h3 class="workflow-step-title">TF-IDF Vectorization</h3>
+            <p class="workflow-step-desc">
+              Text is tokenized, stripped of English stop words, and mapped into unigram and bigram numerical vectors using sublinear term-frequency weighting across 10,000 vocabulary features.
+            </p>
+          </div>
+
+          <div class="workflow-card">
+            <div class="step-badge">03</div>
+            <div class="workflow-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2"/>
+                <path d="M3 9h18"/>
+                <path d="M9 21V9"/>
+              </svg>
+            </div>
+            <h3 class="workflow-step-title">LinearSVC Decision</h3>
+            <p class="workflow-step-desc">
+              A Linear Support Vector Classifier with balanced class weights projects the sparse vector against an optimized maximum-margin hyperplane separating spam from benign distributions.
+            </p>
+          </div>
+
+          <div class="workflow-card">
+            <div class="step-badge">04</div>
+            <div class="workflow-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="m9 12 2 2 4-4"/>
+              </svg>
+            </div>
+            <h3 class="workflow-step-title">Predicted Classification</h3>
+            <p class="workflow-step-desc">
+              The model produces a deterministic binary label (<code class="code-pill">spam</code> or <code class="code-pill">ham</code>) paired with actionable cybersecurity guidance.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section-container section-alt">
+      <div class="container">
+        <div class="about-grid">
+          <div class="about-text-col">
+            <span class="section-tag">SPECIFICATIONS</span>
+            <h2 class="section-title">About This Project</h2>
+            <p class="about-paragraph">
+              <strong>SMS Spam Shield</strong> is a specialized cybersecurity machine learning application engineered to detect deceptive, fraudulent, and unwanted mobile text messages.
+            </p>
+            <p class="about-paragraph">
+              The classification pipeline was trained in Google Colab using scikit-learn and serialized with Joblib into an encapsulated production bundle (<code class="code-pill">spam_model.pkl</code>).
+            </p>
+
+            <div class="tech-spec-list">
+              <div class="tech-spec-item">
+                <div class="spec-label">Model Pipeline</div>
+                <div class="spec-value font-mono">sklearn.pipeline.Pipeline</div>
+              </div>
+              <div class="tech-spec-item">
+                <div class="spec-label">Feature Extractor</div>
+                <div class="spec-value font-mono">TfidfVectorizer(max_features=10000, ngram_range=(1,2), sublinear_tf=True)</div>
+              </div>
+              <div class="tech-spec-item">
+                <div class="spec-label">Classifier</div>
+                <div class="spec-value font-mono">LinearSVC(class_weight='balanced')</div>
+              </div>
+              <div class="tech-spec-item">
+                <div class="spec-label">Class Labels</div>
+                <div class="spec-value font-mono">['ham', 'spam']</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="about-stack-col">
+            <h3 class="stack-col-title">Technology Stack</h3>
+            <div class="stack-cards">
+              <div class="stack-card">
+                <div class="stack-header">
+                  <span class="stack-badge">Backend</span>
+                  <span class="stack-name">Python & Flask</span>
+                </div>
+                <p class="stack-desc">Asynchronous API endpoints with request validation, structured logging, and robust error trapping.</p>
+              </div>
+
+              <div class="stack-card">
+                <div class="stack-header">
+                  <span class="stack-badge">ML Engine</span>
+                  <span class="stack-name">scikit-learn & joblib</span>
+                </div>
+                <p class="stack-desc">Serialized vectorizer and linear support vector classification pipeline loaded once into memory.</p>
+              </div>
+
+              <div class="stack-card">
+                <div class="stack-header">
+                  <span class="stack-badge">Frontend</span>
+                  <span class="stack-name">Modern Web Standards</span>
+                </div>
+                <p class="stack-desc">Semantic HTML5, CSS custom properties, responsive layout, and vanilla JavaScript using the Fetch API.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Privacy Notice Section -->
+    <section id="privacy" class="section-container">
+      <div class="container">
+        <div class="privacy-box">
+          <div class="privacy-header">
+            <div class="privacy-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="privacy-title">Data Privacy &amp; Handling Notice</h2>
+              <span class="privacy-subtitle">Transparent disclosure regarding submitted message content</span>
+            </div>
+          </div>
+          <div class="privacy-content">
+            <p>
+              <strong>In-Memory Processing:</strong> When you submit an SMS message for analysis, it is transmitted over HTTP POST directly to the local Flask application. The backend vectorizes the text in RAM and executes the LinearSVC decision function.
+            </p>
+            <p>
+              <strong>No Message Storage:</strong> The message content is never stored in a database, never written to disk, and never preserved in server access logs. Once classification completes, the message is released from memory.
+            </p>
+            <p>
+              <strong>No Third-Party Retraining:</strong> Analyzed messages are not sent to any external commercial cloud APIs or used to retrain the model.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="container footer-container">
+      <div class="footer-left">
+        <div class="footer-brand">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+          <span>SMS Spam Shield</span>
+        </div>
+        <p class="footer-tagline">AI-Powered SMS Threat Detection</p>
+      </div>
+
+      <div class="footer-right">
+        <span class="footer-note">TF-IDF + LinearSVC Pipeline &bull; Flask &bull; scikit-learn</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
