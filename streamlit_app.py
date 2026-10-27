@@ -1,5 +1,5 @@
 
-import pickle
+import joblib
 from pathlib import Path
 
 import streamlit as st
@@ -15,8 +15,7 @@ MODEL_PATH = Path(__file__).parent / "spam_model.pkl"
 
 @st.cache_resource
 def load_model():
-    with open(MODEL_PATH, "rb") as file:
-        return pickle.load(file)
+        return joblit.load(MODEL_PATH)
 
 
 st.title("🛡️ SMS Spam Shield")
