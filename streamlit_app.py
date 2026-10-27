@@ -15,7 +15,7 @@ MODEL_PATH = Path(__file__).parent / "spam_model.pkl"
 
 @st.cache_resource
 def load_model():
-        return joblit.load(MODEL_PATH)
+        return joblib.load(MODEL_PATH)
 
 
 st.title("🛡️ SMS Spam Shield")
