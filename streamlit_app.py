@@ -42,8 +42,8 @@ if st.button("Analyze Message", type="primary", use_container_width=True):
                 st.error("🚨 SPAM MESSAGE DETECTED")
                 st.write("This message appears to be spam.")
             elif result in ("ham", "0", "false"):
-                st.success("✅ LEGITIMATE MESSAGE")
-                st.write("This message appears to be legitimate.")
+                st.success("✅ HAM")
+                st.write("This message appears to be ham (not spam).")
             else:
                 st.warning(f"Prediction: {prediction}")
 
